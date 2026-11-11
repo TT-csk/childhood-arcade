@@ -1,0 +1,20 @@
+{
+  "core": "Snes9x desktop / Snes9x 2005 Plus Android",
+  "webArchive": "https://cdn.emulatorjs.org/latest/data/cores/snes9x-legacy-wasm.data",
+  "webArchiveSha256": "7d427a575cefad98ff400493fa1d7e892da63fe7bab68979babd9cea0bfaaf3b",
+  "wasmSha256": "c3b930598155256dae0e4f66f2bb05c5dd6fc2366fbb5048a34dd61db392d1cf",
+  "runtimeSha256": "1db7b714595c3f2d77211f5f3fb72b2b24a4b2d3c1bdc5a1153e620cbd5f6676",
+  "webEngineId": "snes9x-ejs-c3b930598155",
+  "nativeArchive": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/snes9x2005_plus_libretro_android.so.zip",
+  "nativeArchiveSha256": "68afc9eed31be14978c9ae5ffe8b388b9852a8e6eb9f23cf33d89e89cb2b9d9a",
+  "nativeSha256": "ada4dbf17de5b04c74ea071052ea11ec6999bee94fd9d669b864f4921fab0b13",
+  "nativeEngineId": "snes9x2005plus-native-ada4dbf17de5",
+  "license": "Snes9x non-commercial terms and upstream frontend licenses retained separately",
+  "date": "2026-11-08",
+  "scope": "SFC cartridges, Android6 candidate; real TV untested; cross-engine states not interchangeable",
+  "fastNativeArchive": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/snes9x2005_libretro_android.so.zip",
+  "fastNativeArchiveSha256": "f2533aa04bf7ea3753b1404014d46a6965438916ba6ecb3eab1ee096090c75f5",
+  "fastNativeSha256": "7e15337d8caa894861b233fbdec39bd3ddb1a6037fe46966e854eb35c6bba47a",
+  "fastNativeEngineId": "snes9x2005-native-7e15337d8caa",
+  "fastNativeScope": "Kirby Super Star only; same Snes9x2005 family, alternate APU implementation; requires independent TV test"
+}

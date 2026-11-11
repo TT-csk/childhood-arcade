@@ -1,0 +1,16 @@
+{
+  "coreArchive": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/fceumm_libretro_android.so.zip",
+  "coreSha256": "81ebd3e72d961d082c876a3a0136f190cd50684231533e397c6fcf2665f4a9d2",
+  "jna": "https://repo.maven.apache.org/maven2/net/java/dev/jna/jna/5.13.0/jna-5.13.0.aar",
+  "jnaArchiveSha256": "3a03daf5a7212201c3a9b44f734dfc9babb3addcb5cbfa639f9f535e887925c0",
+  "coreLicense": "GPL-2.0; source commit matches core-reported git revision",
+  "date": "2026-11-06",
+  "coreReportedVersion": "FCEUmm (SVN) e0f3086",
+  "sourceCommit": "e0f3086a8104f8fbbe49a2615b10401504a9533f",
+  "source": "https://github.com/libretro/libretro-fceumm/tree/e0f3086a8104f8fbbe49a2615b10401504a9533f",
+  "coreArchiveSha256": "c6b9a51208e1ac4d6a63cd13fe82741c8535ce1c26883bbc0fca91764c21e9a3",
+  "sourceArchiveSha256": "7a81aa960e0424f736ceaf3221b93663f7ae0b0a68483ac17f8eb0c4afff28f7",
+  "sourceArchive": "third_party/fceumm-source-e0f3086.tar.gz",
+  "prebuiltCoreSha256": "81ebd3e72d961d082c876a3a0136f190cd50684231533e397c6fcf2665f4a9d2",
+  "builtFromBundledSource": false
+}

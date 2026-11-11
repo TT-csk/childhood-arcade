@@ -1,0 +1,14 @@
+{
+  "core": "FB Alpha 2012",
+  "reportedVersion": "v0.2.97.29 0ce3153",
+  "sha256": "749e6f6079e03cb26736e7270f2badbcfd9e39d4dfaaa1311a010feeb9a33990",
+  "engineId": "fba2012-native-749e6f6079e0",
+  "archiveURL": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/fbalpha2012_libretro_android.so.zip",
+  "archiveSha256": "edc385ae90a2bdbcd7b05345b6451c444c9dd84a2d6e9b41a6ee5f3699d6491d",
+  "scope": "Local native arcade integration; component license independent from project MIT; no games are part of the core",
+  "date": "2026-11-07",
+  "sourceRepository": "https://github.com/libretro/fbalpha2012",
+  "sourceCommit": "0ce31536bef3162fe7e69ff5f555334ec4913cef",
+  "licenseFile": "licenses/FBA2012.txt",
+  "status": "candidate; television validation incomplete"
+}

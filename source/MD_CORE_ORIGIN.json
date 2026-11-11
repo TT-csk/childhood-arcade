@@ -1,0 +1,15 @@
+{
+  "core": "PicoDrive",
+  "webArchive": "https://cdn.emulatorjs.org/latest/data/cores/picodrive-legacy-wasm.data",
+  "webArchiveSha256": "cc42b0c95e9edfd0e5c689211e8e85e45f4525be2d814af8ca9331ef90e0620b",
+  "wasmSha256": "24da00525bd56fa4755a0ec01d10f8eeb6f7436a5cd7d1c95d8513f1a30aaf1b",
+  "runtimeSha256": "5fecb2fe9016c80e4f24cac4ff2102966f8df4ee1fefb0c0d88c3af0d8f24a54",
+  "webEngineId": "picodrive-ejs-24da00525bd5",
+  "nativeArchive": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/picodrive_libretro_android.so.zip",
+  "nativeArchiveSha256": "ad5ed45d21027be641da7839145e9319a3fb0e5fe25ff7c1c64ccc97eab6d6ff",
+  "nativeSha256": "c1cc15edda64c4a98696cd678117f989029db93ed57a53a583791524c6041cf8",
+  "nativeEngineId": "picodrive-native-c1cc15edda64",
+  "license": "Non-commercial; see licenses/PICODRIVE.txt and upstream frontend license",
+  "date": "2026-11-08",
+  "scope": "MD cartridge only; Sega CD/32X not enabled; real TV untested"
+}

@@ -1,0 +1,20 @@
+{
+  "core": "mGBA",
+  "webArchive": "https://cdn.emulatorjs.org/latest/data/cores/mgba-legacy-wasm.data",
+  "webArchiveSha256": "e300d2f368c82bf61d77c972c36e367cf16408ec3d50beede080337519a3d696",
+  "wasmSha256": "b2e6b29c75f3e2936d01c94d6b2e50726f662ba38873ce17f80d9398eba8bca9",
+  "webEngineId": "mgba-ejs-b2e6b29c75f3",
+  "nativeArchive": "https://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/mgba_libretro_android.so.zip",
+  "nativeArchiveSha256": "145dde38cdbc8fefc15697fd203c54da65465be48ed54b419960d0fe461dc493",
+  "nativeSha256": "a976a807a7bd79a7dabbc42cfc02620fca17ec7011e887730e9d768689a4d651",
+  "nativeVersion": "0.11-212-7a12d6d",
+  "nativeEngineId": "mgba-native-a976a807a7bd",
+  "license": "MPL-2.0 for mGBA; upstream frontend licenses retained separately",
+  "date": "2026-11-08",
+  "scope": "GBA candidate; GB/GBC not enabled; TV untested",
+  "webReportedVersion": "0.11-dev 1d9dbb1",
+  "webSource": "https://github.com/EmulatorJS/mgba",
+  "webFrontendSource": "https://github.com/EmulatorJS/EmulatorJS/tree/v4.2.2",
+  "runtimeSha256": "5396841da1e677b18bed8142512cd9c82010ae8a990636d73b0572f940a38a78",
+  "sourceModifications": "Expose frontend OpenAL object; emulator core is unchanged. Game patch provenance is tracked separately."
+}

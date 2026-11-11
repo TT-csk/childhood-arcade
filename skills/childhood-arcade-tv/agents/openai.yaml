@@ -1,0 +1,6 @@
+interface:
+  display_name: "童年游戏厅部署"
+  short_description: "一句话安装或更新电视游戏厅，自动检查连接、备份已有存档并验证启动页面"
+  default_prompt: "使用 $childhood-arcade-tv 把童年游戏厅安装到我的电视，并检查连接、备份进度和验证启动。"
+policy:
+  allow_implicit_invocation: true

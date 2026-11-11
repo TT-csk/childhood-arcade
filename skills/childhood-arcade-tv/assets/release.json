@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "version": "1.0.0",
+  "tag": "v1.0.0",
+  "transport": "provider",
+  "apk": {
+    "filename": "childhood-arcade-1.0.0.apk",
+    "sha256": "fb7a97e6d307238db1f761573bf76f3c84bf27bef933c6d95c0a026c7b4fd5c8",
+    "bytes": 22770426
+  },
+  "game_pack": {
+    "filename": "childhood-arcade-games-1.0.0.zip",
+    "sha256": "d9621702296543a0ed05727d36c9675633559b029d828a0935cc8afea2555c02",
+    "bytes": 392915414
+  },
+  "repository": "TT-csk/childhood-arcade"
+}
