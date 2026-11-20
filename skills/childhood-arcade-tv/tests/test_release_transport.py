@@ -10,12 +10,12 @@ class TransportTests(unittest.TestCase):
   with self.assertRaises(ValueError):call(c,'capabilities')
  def test_zip_backup_and_reject_foreign_paths(self):
   with tempfile.TemporaryDirectory() as d:
-   for name in ('store/prefs.json','../outside'):
+   for name in ('store/prefs.json','store/hall-v2.json','../outside'):
     b=io.BytesIO()
     with zipfile.ZipFile(b,'w') as z:z.writestr(name,'{}')
     c=Mock();c.serial='test';c.run.return_value=b.getvalue();p=Path(d)/'saved.json'
     if name.startswith('store'):
-     result=backup(c,p);self.assertTrue(Path(result['path']).exists());self.assertEqual(result['entries'],1)
+     result=backup(c,p.with_name(name.split('/')[-1]));self.assertTrue(Path(result['path']).exists());self.assertEqual(result['entries'],1)
     else:
      with self.assertRaises(ValueError):backup(c,Path(d)/'bad.json')
 if __name__=='__main__':unittest.main()

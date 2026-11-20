@@ -5,11 +5,14 @@ description: 把童年游戏厅安装或更新到Android电视，并检查连接
 
 # 童年游戏厅一句话部署
 
-用户直接发安装/更新请求时，运行部署流程；这已授权本次安装，无需再问一次“是否安装”。skill负责电脑上的操作，APK负责电视独立运行。首次仍需用户在电视开启ADB并允许此电脑调试；skill不能代替电视端授权，也不能让互不连通的网络自动互通。
+用户直接发安装/更新请求时，运行部署流程；检测到已安装旧版时，先明确告知并询问是否覆盖更新，用户同意后才执行覆盖。skill负责电脑上的操作，APK负责电视独立运行。首次仍需用户在电视开启ADB并允许此电脑调试；skill不能代替电视端授权，也不能让互不连通的网络自动互通。
 
 本目录入口为 `scripts/tv.py`，只需Python3和官方ADB。配置、已验证电视标识、备份与执行报告默认保存在 `~/.config/childhood-arcade`；可用 `--home` 或 `ARCADE_DEPLOY_HOME` 隔离测试。查看支持的命令用 `python3 scripts/tv.py --help`。
 
 ## 执行
+
+旧用户升级默认选择 32 位；只有用户明确选择并且设备系统支持 64 位 ARM 时，首次准备可使用 `--abi arm64-v8a`。不要将旧版用户静默切换到 64 位。
+
 
 1. 对尚未配置用户，使用用户给出的真实 GitHub OWNER/REPO，运行 `python3 scripts/setup_release.py --repo OWNER/REPO --serial 当前电视IP`；无 IP 可省略 serial 仅准备文件。固定版本/文件名/哈希与 provider 传输协议在 assets/release.json。不可猜仓库、换内核或混用旧调试包。Windows 使用实际可用的 Python 命令。
 2. 先运行 `python3 scripts/tv.py status`。本机已配置APK时直接使用；缺少配置时按 [references/operations.md](references/operations.md) 的首次配置处理。发布素材和自动下载只可使用已核实许可且经审核的版本；不可上传授权未确认的资源。
@@ -17,6 +20,7 @@ description: 把童年游戏厅安装或更新到Android电视，并检查连接
 4. 脚本校验APK哈希，连接并检查SDK/空间/设备身份，更新前备份已保存的进度，覆盖安装，启动，通过受限部署接口读取实际页面状态并截图。报告从stdout输出JSON，stderr有阶段进度。安装使用 `-r`，不卸载、不清数据、不修改系统应用或桌面。若电视现有APK的完整SHA-256与目标相同，先备份，再跳过重复安装；仍检查资源与启动页面。配置含 `game_pack_manifest` 时，逐项核对本地资源和电视文件，断电后重跑会跳过已验证文件，保留不一致的已有文件并报告；资源未齐不算部署完成。
 5. 按返回状态继续：
    - `installed_verified`：安装与页面显示已验证；报告截图、备份位置和未验证项目。不要声称实体手柄、人工听音或目标电视全部游戏都已通过。
+   - `confirmation_required`：告知检测到旧版，询问是否覆盖更新；明确同意后，在原命令后增加 `--confirm-update` 重试。
    - `needs_target`：只补问电视当前IP以及能否从这台电脑到达；调试入口和VPN情况见参考文件。
    - `needs_authorization`：请用户在电视允许调试；用户回复后直接再次运行部署，脚本会使用待授权地址，不再要求重填。
    - `network_unreachable` / `connection_timeout` / `device_offline`：报告具体连接失败，指导核对IP、电视调试开关、局域网/VPN访问；普通VPN不等于两地设备可以互连。

@@ -18,7 +18,7 @@ from webview import page_health
 from resources import read_pack, install_pack
 
 PACKAGE = 'org.childhood.arcade'
-MIN_SDK = 23
+MIN_SDK = 21
 SLOT = re.compile(r'(?:prefs|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\.json')
 
 
@@ -217,7 +217,7 @@ class Client:
             self.run(['-s', self.serial, 'forward', '--remove', 'tcp:' + port], allow_failure=True)
 
 
-def deploy(home, config, client, apk, report, announce):
+def deploy(home, config, client, apk, report, announce, confirm_update=False):
     entries = []
     if config.get('game_pack_manifest'):
         try:
@@ -235,7 +235,7 @@ def deploy(home, config, client, apk, report, announce):
     if previous and previous['identity'] != info['identity']:
         raise DeploymentError('target_changed', '该地址对应的设备与已绑定电视不同，已停止安装。请先确认是否更换了电视。', actual_model=info['model'])
     if info['sdk'] < MIN_SDK:
-        raise DeploymentError('unsupported_android', '当前APK最低要求Android 6 / API23。', actual_sdk=info['sdk'])
+        raise DeploymentError('unsupported_android', '当前APK最低要求Android 5 / API21。', actual_sdk=info['sdk'])
     config['target'] = {'serial': client.serial, 'identity': info['identity'], 'model': info['model']}
     config.pop('pending_serial', None)
     atomic_json(home / 'deployment.json', config)
@@ -255,6 +255,8 @@ def deploy(home, config, client, apk, report, announce):
         report['install_skipped'] = True
         out, err, code = 'Success: installed APK already matches expected SHA-256', '', 0
     else:
+        if report['existing_install'] and not confirm_update:
+            raise DeploymentError('confirmation_required', '检测到已安装童年游戏厅，是否覆盖更新？确认后重新执行并加 --confirm-update；旧数据不会被清除。')
         if info['free_bytes'] is not None and info['free_bytes'] < apk['required_free_bytes']:
             raise DeploymentError('insufficient_space', '电视可用空间不足，未执行安装；请先在电视上释放空间。', available=info['free_bytes'], required=apk['required_free_bytes'])
         announce('覆盖安装游戏厅，保留应用数据')
@@ -331,6 +333,8 @@ def main(argv=None):
     for name in ('deploy', 'doctor', 'probe', 'install', 'backup', 'restore'):
         command = commands.add_parser(name)
         command.add_argument('--serial')
+        if name in ('deploy', 'install'):
+            command.add_argument('--confirm-update', action='store_true', help='用户确认覆盖更新已安装版本后使用')
         if name == 'install':
             command.add_argument('--apk')
         if name == 'restore':
@@ -390,7 +394,7 @@ def main(argv=None):
             if args.command in ('deploy', 'install'):
                 config['pending_serial'] = serial
                 atomic_json(home / 'deployment.json', config)
-                report['status'], report['message'] = deploy(home, config, client, apk, report, lambda message: print(message, file=sys.stderr, flush=True))
+                report['status'], report['message'] = deploy(home, config, client, apk, report, lambda message: print(message, file=sys.stderr, flush=True), confirm_update=args.confirm_update)
             elif args.command == 'restore':
                 client.connect()
                 info = client.probe()

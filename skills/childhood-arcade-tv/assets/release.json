@@ -1,17 +1,34 @@
 {
   "schema": 1,
-  "version": "1.0.0",
-  "tag": "v1.0.0",
+  "version": "2.0.0",
+  "tag": "v2.0.0",
   "transport": "provider",
   "apk": {
-    "filename": "childhood-arcade-1.0.0.apk",
-    "sha256": "fb7a97e6d307238db1f761573bf76f3c84bf27bef933c6d95c0a026c7b4fd5c8",
-    "bytes": 22770426
+    "filename": "childhood-arcade-2.0.0-arm32.apk",
+    "sha256": "eba88e034c6234b7bced82611dfa473fc9d80f288b53fce22757b35f0f4a9081",
+    "bytes": 84477578
   },
   "game_pack": {
     "filename": "childhood-arcade-games-1.0.0.zip",
     "sha256": "d9621702296543a0ed05727d36c9675633559b029d828a0935cc8afea2555c02",
-    "bytes": 392915414
+    "bytes": 392915414,
+    "tag": "v1.0.0"
   },
-  "repository": "TT-csk/childhood-arcade"
+  "repository": "TT-csk/childhood-arcade",
+  "minApi": 21,
+  "apk32": {
+    "filename": "childhood-arcade-2.0.0-arm32.apk",
+    "sha256": "eba88e034c6234b7bced82611dfa473fc9d80f288b53fce22757b35f0f4a9081",
+    "bytes": 84477578
+  },
+  "apk64": {
+    "filename": "childhood-arcade-2.0.0-arm64.apk",
+    "sha256": "b9f804b59da3711995a09a6959773dd3ea26dcf0207c478856f23bc0d924de00",
+    "bytes": 92255860
+  },
+  "game_pack_v2": {
+    "filename": "childhood-arcade-games-2.0.0.zip",
+    "sha256": "b6c48dcdfef48bab62bf898e7bfbaddc2ec608fe2961abbb307fac2b2334a1b4",
+    "bytes": 401978085
+  }
 }

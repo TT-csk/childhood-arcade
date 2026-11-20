@@ -19,7 +19,7 @@ def backup(client,path):
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         total=0
         for e in z.infolist():
-            if not re.fullmatch(r'(?:store/(?:prefs|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\.json|nes/[a-f0-9]{64}\.srm)',e.filename):raise ValueError('Invalid backup entry')
+            if not re.fullmatch(r'(?:store/(?:prefs|hall-v2|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\.json|nes/[a-f0-9]{64}\.srm)',e.filename):raise ValueError('Invalid backup entry')
             total+=e.file_size
             if total>256*1024**2:raise ValueError('Backup exceeds limit')
         if z.testzip():raise ValueError('Corrupt backup')
@@ -36,7 +36,7 @@ def restore(client,path):
     with zipfile.ZipFile(path) as z:
         total=0;seen=set()
         for e in z.infolist():
-            if e.filename in seen or not re.fullmatch(r'(?:store/(?:prefs|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\.json|nes/[a-f0-9]{64}\.srm)',e.filename):raise ValueError('Invalid backup entry')
+            if e.filename in seen or not re.fullmatch(r'(?:store/(?:prefs|hall-v2|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\.json|nes/[a-f0-9]{64}\.srm)',e.filename):raise ValueError('Invalid backup entry')
             seen.add(e.filename);total+=e.file_size
             if total>256*1024**2 or len(seen)>1000:raise ValueError('Backup exceeds limits')
         if z.testzip():raise ValueError('Corrupt backup')
