@@ -1,0 +1,44 @@
+[
+  {
+    "name": "fceumm",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/fceumm_libretro_android.so.zip",
+    "bytes": 454910,
+    "sha256": "c5eff4d274ad6b2190014c559243f842bcbb0662f5c76335388cfb07646b7833"
+  },
+  {
+    "name": "mgba",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/mgba_libretro_android.so.zip",
+    "bytes": 419371,
+    "sha256": "df1dd7fe5eb28cdb071bddb45fe4f3f0127512440a41402a5e380007d693099e"
+  },
+  {
+    "name": "snes9x2005",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/snes9x2005_libretro_android.so.zip",
+    "bytes": 232369,
+    "sha256": "65a6215aee48da8e375d07770081071883111dce623dfa7da194d0d6b5e6fb35"
+  },
+  {
+    "name": "snes9x2005_plus",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/snes9x2005_plus_libretro_android.so.zip",
+    "bytes": 220290,
+    "sha256": "40cf2e6e46ec13b902bed9ccfbaffa0a81c7b97ed9c2af1a3da9a62fb290941a"
+  },
+  {
+    "name": "picodrive",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/picodrive_libretro_android.so.zip",
+    "bytes": 604891,
+    "sha256": "c461757206d2e7b3dcdc8235f1c68a48b8057fcbef3e428054633ffdb9df9252"
+  },
+  {
+    "name": "fbneo",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/fbneo_libretro_android.so.zip",
+    "bytes": 16940243,
+    "sha256": "d7e42f7d2886b54ba13c936ec23cfed93cb7f6ffb964372aac0ec6d84d50685e"
+  },
+  {
+    "name": "fbalpha2012",
+    "url": "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/fbalpha2012_libretro_android.so.zip",
+    "bytes": 4160054,
+    "sha256": "a475730d564864ca02aba3014f1fffaa0207a04b01e168f74529f8d813e402cf"
+  }
+]
