@@ -21,7 +21,7 @@
   NativeEngine.prototype.syncBounds=function(){var r=this.canvas.getBoundingClientRect();bridge.nativeNesBounds(r.left,r.top,r.width,r.height,innerWidth,innerHeight);};
   NativeEngine.prototype.applyScale=function(mode){var self=this;if(this.legacy)return this.legacy.applyScale(mode);requestAnimationFrame(function(){self.syncBounds();});};
   NativeEngine.prototype.resume=function(){if(this.legacy)return this.legacy.resume();if(this.active){document.documentElement.classList.add('native-running');this.syncBounds();bridge.nativeNesResume();}};
-  NativeEngine.prototype.pause=function(){if(this.legacy)return this.legacy.pause();bridge.nativeNesPause();if(this.kind==='gba'||this.kind==='md'||this.kind==='sfc'){var health=this.stats();if(health.error&&window.Arcade&&window.Arcade.storageError)window.Arcade.storageError(health.error);}document.documentElement.classList.remove('native-running');};
+  NativeEngine.prototype.pause=function(){if(this.legacy)return this.legacy.pause();bridge.nativeNesPause();if(this.kind==='gba'||this.kind==='md'||this.kind==='sfc'||this.kind==='nes'){var health=this.stats();if(health.error&&window.Arcade&&window.Arcade.storageError)window.Arcade.storageError(health.error);}document.documentElement.classList.remove('native-running');};
   NativeEngine.prototype.releaseAll=function(){if(this.legacy)return this.legacy.releaseAll();bridge.nativeNesRelease();};
   NativeEngine.prototype.button=function(player,button,down){if(this.legacy)return this.legacy.button(player,button,down);if(this.active)bridge.nativeNesButton(player,button,!!down);};
   NativeEngine.prototype.snapshot=function(){return this.legacy?this.legacy.snapshot():result(bridge.nativeNesSnapshot());};
@@ -30,9 +30,10 @@
     if(save.engine==='jsnes-2.1.0'&&this.kind==='nes'){
       // Retain old progress with its original interpreter; never relabel its state.
       if(this.legacy)return this.legacy.restore(save);
-      var legacy=new Base(this.canvas);legacy.ensureAudio();return legacy.load(this.binary,this.hash,this.game).then(function(){try{legacy.restore(save);}catch(e){legacy.close();throw e;}bridge.nativeNesClose();self.legacy=legacy;self.legacy.setVolume(self.volume);self.legacy.onError=function(e){if(self.onError)self.onError(e);};});
+      var legacy=new Base(this.canvas);legacy.ensureAudio();return legacy.load(this.binary,this.hash,Object.assign({},this.game,{desktopCore:"jsnes"})).then(function(){try{legacy.restore(save);}catch(e){legacy.close();throw e;}bridge.nativeNesClose();self.legacy=legacy;self.legacy.setVolume(self.volume);self.legacy.onError=function(e){if(self.onError)self.onError(e);};});
     }
-    if(save.engine!==this.engineId||save.state.format!=='libretro-base64'||typeof save.state.data!=='string'||save.state.data.length>12*1024*1024)throw new Error('存档与当前游戏版本不匹配');
+    if(save.engine!==this.engineId){var nesPair=[save.engine,this.engineId].sort().join('|')==='fceumm-native-05dc86015ca0|fceumm-native-81ebd3e72d96';if(!nesPair||this.kind!=='nes')throw new Error('这个即时存档暂不能在当前设备读取，原存档已保留');}
+    if(save.state.format!=='libretro-base64'||typeof save.state.data!=='string'||save.state.data.length>12*1024*1024)throw new Error('存档与当前游戏版本不匹配');
     var raw;try{raw=atob(save.state.data);}catch(e){throw new Error('存档校验失败，当前进度已保留');}var bytes=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
     if(bytes.length!==save.state.bytes||ArcadeLib.sha256(bytes)!==save.state.sha256)throw new Error('存档校验失败，当前进度已保留');
     if(this.legacy)throw new Error('请从游戏详情重新打开，再读取此进度；当前进度已保留');
@@ -40,6 +41,6 @@
   };
   NativeEngine.prototype.thumbnail=function(){return this.legacy?this.legacy.thumbnail():bridge.nativeNesImage();};
   NativeEngine.prototype.setVolume=function(value){this.volume=value;if(this.legacy)this.legacy.setVolume(value);else bridge.nativeNesVolume(value);};
-  NativeEngine.prototype.close=function(){if(this.healthTimer){clearInterval(this.healthTimer);this.healthTimer=null;}if(this.legacy){var audio=this.legacy.audio;this.legacy.close();if(audio&&audio.state!=='closed')audio.close().catch(function(){});this.legacy=null;}bridge.nativeNesClose();if(this.kind==='gba'||this.kind==='md'||this.kind==='sfc'){var health=this.stats();if(health.error&&window.Arcade&&window.Arcade.storageError)window.Arcade.storageError(health.error);}document.documentElement.classList.remove('native-running');this.active=false;};
+  NativeEngine.prototype.close=function(){if(this.healthTimer){clearInterval(this.healthTimer);this.healthTimer=null;}if(this.legacy){var audio=this.legacy.audio;this.legacy.close();if(audio&&audio.state!=='closed')audio.close().catch(function(){});this.legacy=null;}bridge.nativeNesClose();if(this.kind==='gba'||this.kind==='md'||this.kind==='sfc'||this.kind==='nes'){var health=this.stats();if(health.error&&window.Arcade&&window.Arcade.storageError)window.Arcade.storageError(health.error);}document.documentElement.classList.remove('native-running');this.active=false;};
   window.ArcadeEngine=NativeEngine;
 }());

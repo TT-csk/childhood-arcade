@@ -1,0 +1,33 @@
+{
+  "scope": "pinned local ARM dual-ABI test build; no user game data",
+  "abiLibraries": {
+    "armeabi-v7a": {
+      "libarcade.so": "749e6f6079e03cb26736e7270f2badbcfd9e39d4dfaaa1311a010feeb9a33990",
+      "libfbneo.so": "5a15ab447444632d2821c440d4e3af17f1794b6c9cfeee0fbec1f1c05e34aba5",
+      "libfbneo3g.so": "f8e7c15a91e1c92740551bd8f6da83bb4d0c8d3a81f2a7927b5639ed068de561",
+      "libfbneo5g.so": "9244f6199f48e85a4aeac08daceba29c65a16aba0a4a9808e499d480d1ef1cac",
+      "libfbneo5w.so": "a9db9b2ce5eeb85c07f4d34d22da63eba9cfffa929c279ae6c440de0392d21b4",
+      "libfceumm.so": "81ebd3e72d961d082c876a3a0136f190cd50684231533e397c6fcf2665f4a9d2",
+      "libjnidispatch.so": "e262e528436960b51259a62d2a44deb914d00804b25a0a295c089b739ffe8445",
+      "libmgba.so": "a976a807a7bd79a7dabbc42cfc02620fca17ec7011e887730e9d768689a4d651",
+      "libpicodrive.so": "c1cc15edda64c4a98696cd678117f989029db93ed57a53a583791524c6041cf8",
+      "libsnes9x2005.so": "7e15337d8caa894861b233fbdec39bd3ddb1a6037fe46966e854eb35c6bba47a",
+      "libsnes9x2005plus.so": "ada4dbf17de5b04c74ea071052ea11ec6999bee94fd9d669b864f4921fab0b13"
+    },
+    "arm64-v8a": {
+      "libarcade.so": "657036bd812a9179fd6b7af8759303fcca0f023f32b9b7fccc8419b46f967962",
+      "libfbneo.so": "82637a59dbe07f544be97c79267acafa17ffe3766bcbe0fcee5b6efd540f2e0b",
+      "libfbneo3g.so": "665a6ba8d0b9ac40b41e9d2dfdbc97ba5035cf6162090e86d817e49c31cd1e8d",
+      "libfbneo5g.so": "c24dc98d08ae84f4a03ca52eadc07cfa8fa13101750fd49cebbcb7b372de08e2",
+      "libfbneo5w.so": "f79c0f55b980668ab306dd8d418b0dfad80a4ddcecbf7e51049ace3ae3af71fa",
+      "libfceumm.so": "05dc86015ca040f17edfc0c47834b30e0d30f8a6304dd088d1247a2007e554c7",
+      "libjnidispatch.so": "95fd6129757ceae73472b014c0c7e23a27a193adc4c355693706998aa4757be8",
+      "libmgba.so": "b5a6ed40ede735ea7f1d56916f4ceed8c2aabe4d481fe3383ae2b5e5485b6545",
+      "libpicodrive.so": "92d28b94fd9381a9dea670e57d58a0f3252a99d0ffde8d310add41f81f90a4fd",
+      "libsnes9x2005.so": "5ac303f71adcab69d6fe2a85c498fb89a1cc1447c252398e0d5f5a70948f1500",
+      "libsnes9x2005plus.so": "0492439e52a1cbe41906febac6ae84b40209302129ad9bfc9eb7b99e0f965677"
+    }
+  },
+  "fceummArm64SourceCommit": "e0f3086a8104f8fbbe49a2615b10401504a9533f",
+  "fceummArm64SourceArchiveSha256": "7a81aa960e0424f736ceaf3221b93663f7ae0b0a68483ac17f8eb0c4afff28f7"
+}

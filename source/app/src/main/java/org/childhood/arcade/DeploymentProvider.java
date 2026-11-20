@@ -20,7 +20,7 @@ public final class DeploymentProvider extends ContentProvider {
    }result.put("verified",dest.isFile()&&hash(dest).equals(expected)).put("bytes",dest.isFile()?dest.length():0).put("sha256",expected);
   }else throw new IOException("Unknown deployment method");
  }catch(Exception e){try{result.put("error",e.toString());}catch(Exception ignored){}}Bundle out=new Bundle();try{out.putString("result",Base64.encodeToString(result.toString().getBytes("UTF-8"),Base64.NO_WRAP));}catch(Exception e){throw new IllegalStateException(e);}return out;}
- private boolean allowed(String p){return p.matches("store/(prefs|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\\.json")||p.matches("nes/[a-f0-9]{64}\\.srm");}
+ private boolean allowed(String p){return p.matches("store/(prefs|hall-v2|slot:[a-f0-9]{64}:[0-3]|battery:[a-f0-9]{64})\\.json")||p.matches("nes/[a-f0-9]{64}\\.srm");}
  private void copy(File a,File b)throws Exception{if(a.isDirectory()){b.mkdirs();File[] children=a.listFiles();if(children!=null)for(File child:children)copy(child,new File(b,child.getName()));}else{b.getParentFile().mkdirs();try(InputStream in=new FileInputStream(a);FileOutputStream out=new FileOutputStream(b)){byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1)out.write(buf,0,n);}}}
  private void remove(File f){if(f.isDirectory()){File[] children=f.listFiles();if(children!=null)for(File c:children)remove(c);}f.delete();}
  private void recoverRestore()throws Exception{

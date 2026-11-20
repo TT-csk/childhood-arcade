@@ -70,7 +70,7 @@ class DeploymentTests(unittest.TestCase):
 
     def invoke(self, client, config=None):
         report = {'run_id': 'test-run', 'installed': False}
-        status = d.deploy(self.home, config or {'schema': 1}, client, self.apk, report, lambda _: None)
+        status = d.deploy(self.home, config or {'schema': 1}, client, self.apk, report, lambda _: None, confirm_update=True)
         return status, report
 
     def blocked(self, client, expected, config=None):
@@ -85,11 +85,18 @@ class DeploymentTests(unittest.TestCase):
     def test_wrong_model_cannot_be_installed(self):
         self.blocked(Device(), 'wrong_model', {'expected_model': 'another-tv'})
 
-    def test_sdk_below_23_cannot_be_installed(self):
-        self.blocked(Device(sdk=22), 'unsupported_android')
+    def test_sdk_below_21_cannot_be_installed(self):
+        self.blocked(Device(sdk=20), 'unsupported_android')
 
     def test_low_space_stops_before_install(self):
         self.blocked(Device(free=4096), 'insufficient_space')
+
+    def test_existing_app_requires_confirmation_before_adb_install(self):
+        client = Device()
+        with self.assertRaises(d.DeploymentError) as caught:
+            d.deploy(self.home, {'schema': 1}, client, self.apk, {'run_id': 'test', 'installed': False}, lambda _: None)
+        self.assertEqual(caught.exception.status, 'confirmation_required')
+        self.assertFalse(any('install' in command for command in client.commands))
 
     def test_backup_failure_preserves_existing_install(self):
         self.blocked(Device(backup_error=True), 'backup_unavailable')

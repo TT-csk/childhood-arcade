@@ -4,6 +4,7 @@ public final class ControllerDirections {
  private static final float PRESS=.65f, RELEASE=.60f;
  private ControllerDirections(){}
  private static float finite(float v){return Float.isNaN(v)||Float.isInfinite(v)?0:v;}
+ public static float normalized(float value,float center){value=finite(value);center=finite(center);if(Math.abs(center)>.75f)center=0;return Math.max(-1,Math.min(1,(value-center)/(value>=center?1-center:1+center)));}
  private static boolean negative(float value,boolean held){return value<-(held?RELEASE:PRESS);}
  private static boolean positive(float value,boolean held){return value>(held?RELEASE:PRESS);}
  public static boolean[] update(float hatX,float hatY,float stickX,float stickY,boolean[] old){
