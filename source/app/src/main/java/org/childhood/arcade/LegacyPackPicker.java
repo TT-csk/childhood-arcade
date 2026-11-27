@@ -18,8 +18,8 @@ final class LegacyPackPicker {
  private final MainActivity activity;
  LegacyPackPicker(MainActivity activity){this.activity=activity;}
  void start(){
-  if(Build.VERSION.SDK_INT>=29){activity.resources.fail("电视没有可用的文件选择器，请安装兼容文件管理器后重试");return;}
-  if(Build.VERSION.SDK_INT>=23&&activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){activity.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},PERMISSION);return;}
+  if(Build.VERSION.SDK_INT>=33&&!Environment.isExternalStorageManager()){activity.resources.fail("请返回大厅U盘页面授权文件访问，再选择资源ZIP");return;}
+  if(Build.VERSION.SDK_INT>=23&&Build.VERSION.SDK_INT<=32&&!(Build.VERSION.SDK_INT>=30&&Environment.isExternalStorageManager())&&activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){activity.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},PERMISSION);return;}
   roots();
  }
  void permissionResult(boolean granted){if(granted)roots();else activity.resources.fail("未允许读取存储，无法选择资源包");}

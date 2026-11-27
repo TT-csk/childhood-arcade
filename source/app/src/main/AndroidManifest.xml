@@ -1,13 +1,14 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.childhood.arcade" android:versionCode="211" android:versionName="2.0.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.childhood.arcade" android:versionCode="220" android:versionName="2.1.0">
   <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-feature android:name="android.hardware.gamepad" android:required="false"/>
-  <application android:label="童年游戏厅 v2.0" android:icon="@drawable/ic_launcher" android:banner="@drawable/banner" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:hardwareAccelerated="true" android:allowBackup="false" android:debuggable="false" android:usesCleartextTraffic="false" android:isGame="true">
+  <application android:requestLegacyExternalStorage="true" android:label="童年游戏厅 v2.1" android:icon="@drawable/ic_launcher" android:banner="@drawable/banner" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:hardwareAccelerated="true" android:allowBackup="false" android:debuggable="false" android:usesCleartextTraffic="false" android:isGame="true">
     <provider android:name="org.childhood.arcade.UpdateFileProvider" android:authorities="org.childhood.arcade.updates" android:exported="false" android:grantUriPermissions="true"/>
     <provider android:name="org.childhood.arcade.DeploymentProvider" android:authorities="org.childhood.arcade.deployment" android:exported="true" android:permission="android.permission.DUMP"/>
     <activity android:name="org.childhood.arcade.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:launchMode="singleTask">

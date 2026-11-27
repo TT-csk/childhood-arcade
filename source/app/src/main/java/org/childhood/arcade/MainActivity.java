@@ -31,7 +31,12 @@ import java.util.HashMap;
 public class MainActivity extends Activity implements InputManager.InputDeviceListener {
     private WebView web;
     private NativeNes nativeNes;
+    private volatile boolean startBusy=false,startCancelled=false;
+    private volatile String startResult="{}";
+    private int startTicket=0;
+    private final Object startLock=new Object();
     HallResources resources;
+    private UsbPackageBrowser usbBrowser;
     private ValueCallback<Uri[]> chooser;
     private String pendingBackup;
     private boolean fallbackPackActive;
@@ -57,7 +62,7 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         File recovery=new File(getFilesDir(),"store.previous");
         if(!storeDir.exists()&&recovery.exists())recovery.renameTo(storeDir);
         storeDir.mkdirs();
-        resources=new HallResources(this);
+        resources=new HallResources(this);usbBrowser=new UsbPackageBrowser(this);
         WebView.setWebContentsDebuggingEnabled(false);
         getSharedPreferences("deployment",0).edit().putBoolean("page_loaded",false).remove("health").remove("health_at").apply();
         web=new WebView(this);
@@ -80,14 +85,14 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
                 if(address.startsWith("https://appassets.androidplatform.net/assets/")){
                     String asset=request.getUrl().getPath().substring("/assets/".length());
                     if(asset.contains("..")||asset.startsWith("/"))return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));
-                    String mime=asset.endsWith(".js")?"text/javascript":asset.endsWith(".css")?"text/css":asset.endsWith(".html")?"text/html":asset.endsWith(".wasm")?"application/wasm":asset.endsWith(".png")?"image/png":asset.endsWith(".ttf")?"font/ttf":"application/octet-stream";
+                    String mime=asset.endsWith(".js")?"text/javascript":asset.endsWith(".css")?"text/css":asset.endsWith(".html")?"text/html":asset.endsWith(".wasm")?"application/wasm":asset.endsWith(".svg")?"image/svg+xml":asset.endsWith(".png")?"image/png":asset.endsWith(".ttf")?"font/ttf":"application/octet-stream";
                     try{return new WebResourceResponse(mime,(mime.startsWith("text/")?"UTF-8":null),getAssets().open(asset));}catch(IOException e){return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",null,new ByteArrayInputStream(new byte[0]));}
                 }
                 String scheme=request.getUrl().getScheme();
                 if("http".equals(scheme)||"https".equals(scheme))return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));
                 return null;
             }
-            @Override public void onPageFinished(WebView v,String url){hideSystemUI();if(url.equals("https://appassets.androidplatform.net/assets/index.html"))getSharedPreferences("deployment",0).edit().putBoolean("page_loaded",true).apply();}
+            @Override public void onPageFinished(WebView v,String url){hideSystemUI();if(url.equals("https://appassets.androidplatform.net/assets/index.html"))announceControllers();if(url.equals("https://appassets.androidplatform.net/assets/index.html"))getSharedPreferences("deployment",0).edit().putBoolean("page_loaded",true).apply();}
         });
         web.setWebChromeClient(new WebChromeClient(){
             @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
@@ -110,22 +115,37 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         }});
         inputs=(InputManager)getSystemService(INPUT_SERVICE);inputs.registerInputDeviceListener(this,null);
     }
-    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==LegacyPackPicker.PERMISSION)new LegacyPackPicker(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);if(request==LegacyBackupExporter.PERMISSION)new LegacyBackupExporter(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);if(request==LegacyBackupPicker.PERMISSION)new LegacyBackupPicker(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);}
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==UsbPackageBrowser.PERMISSION)usbBrowser.permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);if(request==LegacyPackPicker.PERMISSION)new LegacyPackPicker(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);if(request==LegacyBackupExporter.PERMISSION)new LegacyBackupExporter(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);if(request==LegacyBackupPicker.PERMISSION)new LegacyBackupPicker(this).permissionResult(results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED);}
     void legacyFileFinished(Uri uri){if(chooser!=null){chooser.onReceiveValue(uri==null?null:new Uri[]{uri});chooser=null;}}
     String legacyBackupData(){return pendingBackup;}
     void legacyBackupFinished(boolean ok){pendingBackup=null;js("Arcade.backupResult("+ok+")");if(!ok)Toast.makeText(this,"备份未保存，请检查存储权限和空间",Toast.LENGTH_LONG).show();}
     private void hideSystemUI(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);}
     private void js(final String value){if(web!=null)web.post(new Runnable(){public void run(){if(web!=null)web.evaluateJavascript("if(window.Arcade){"+value+"}",null);}});}
-    @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(focused)hideSystemUI();}
-    @Override protected void onPause(){if(nativeNes!=null)nativeNes.pause();super.onPause();js("Arcade.lifecyclePause()");}
+    @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(focused)hideSystemUI();else js("Arcade.lifecyclePause()");}
+    @Override protected void onPause(){if(startBusy)startCancelled=true;else if(nativeNes!=null)nativeNes.pause();super.onPause();js("Arcade.lifecyclePause()");}
     @Override protected void onResume(){super.onResume();if(web!=null)js("Arcade.updateResumed&&Arcade.updateResumed()");}
-    @Override protected void onDestroy(){if(nativeNes!=null)nativeNes.close();if(inputs!=null)inputs.unregisterInputDeviceListener(this);if(web!=null){web.removeJavascriptInterface("NativeArcade");web.destroy();web=null;}super.onDestroy();}
-    private boolean gamepad(KeyEvent event){return (event.getSource()&InputDevice.SOURCE_GAMEPAD)==InputDevice.SOURCE_GAMEPAD||(event.getSource()&InputDevice.SOURCE_JOYSTICK)==InputDevice.SOURCE_JOYSTICK;}
-    private String controllerKey(int id){InputDevice device=InputDevice.getDevice(id);return device==null?"安卓输入设备 "+id:device.getName()+" ["+device.getDescriptor()+"]";}
+    @Override protected void onDestroy(){if(usbBrowser!=null)usbBrowser.close();if(resources!=null)resources.cancel();if(startBusy)startCancelled=true;else if(nativeNes!=null)nativeNes.close();if(inputs!=null)inputs.unregisterInputDeviceListener(this);if(web!=null){web.removeJavascriptInterface("NativeArcade");web.destroy();web=null;}super.onDestroy();}
+    private boolean gamepad(KeyEvent event){InputDevice d=event.getDevice();int sources=d==null?0:d.getSources();int key=event.getKeyCode();return ControllerCompatibility.isGamepad(event.getSource(),sources,key,event.getDeviceId());}
+    private final java.util.HashMap<Integer,String> announcedControllerKeys=new java.util.HashMap<Integer,String>();
+    private void announceControllers(){for(int id:InputDevice.getDeviceIds()){InputDevice d=InputDevice.getDevice(id);if(d!=null&&ControllerCompatibility.hasPadSource(d.getSources())){int p=player(id);String key=controllerKey(id);if(!key.equals(announcedControllerKeys.get(id))){announcedControllerKeys.put(id,key);js("Arcade.nativeRegister("+id+","+p+","+JSONObject.quote(key)+")");}}}}
+    private String rawControllerKey(InputDevice device){return device.getName()+" ["+device.getDescriptor()+"]";}
+    private String controllerKey(int id){
+        InputDevice device=InputDevice.getDevice(id);if(device==null)return "安卓输入设备 "+id;
+        String raw=rawControllerKey(device);if(!ControllerCompatibility.hasPadSource(device.getSources()))return raw;
+        JSONObject profiles=controllerConfig.optJSONObject("deviceInputs");if(profiles==null)return raw;
+        java.util.ArrayList<String> learned=new java.util.ArrayList<String>(),siblings=new java.util.ArrayList<String>(),active=new java.util.ArrayList<String>();
+        java.util.Iterator<String> keys=profiles.keys();while(keys.hasNext())learned.add(keys.next());
+        for(int otherId:InputDevice.getDeviceIds()){
+            InputDevice other=InputDevice.getDevice(otherId);if(other==null)continue;
+            if(ControllerCompatibility.hasPadSource(other.getSources()))active.add(rawControllerKey(other));
+            else if(device.getVendorId()!=0&&device.getVendorId()==other.getVendorId()&&device.getProductId()==other.getProductId()&&device.getName().equals(other.getName()))siblings.add(rawControllerKey(other));
+        }
+        return ControllerCompatibility.reconnectKey(raw,learned.toArray(new String[0]),siblings.toArray(new String[0]),active.toArray(new String[0]));
+    }
     private int player(int id){
         Integer existing=players.get(id);if(existing!=null&&(existing!=0||nativeNes==null||!nativeNes.supportsFourPlayers()))return existing;
         int value=!players.containsValue(1)?1:!players.containsValue(2)?2:0;players.put(id,value);
-        js("Arcade.nativeRegister("+id+","+value+","+JSONObject.quote(controllerKey(id))+")");return value;
+        String key=controllerKey(id);announcedControllerKeys.put(id,key);js("Arcade.nativeRegister("+id+","+value+","+JSONObject.quote(key)+")");return value;
     }
     @Override public boolean dispatchKeyEvent(KeyEvent e){
         int c=e.getKeyCode();
@@ -157,11 +177,11 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         }
         return super.dispatchGenericMotionEvent(e);
     }
-    @Override public void onInputDeviceAdded(int id){}
-    @Override public void onInputDeviceChanged(int id){}
-    @Override public void onInputDeviceRemoved(int id){axes.remove(id);sentAxes.remove(id);triggers.remove(id);synchronized(rawAxes){rawAxes.remove(id);}Integer p=players.remove(id);if(p!=null&&p>0&&nativeNes!=null&&nativeNes.isRunning())nativeNes.pause();js("Arcade.nativeDisconnected("+id+")");}
+    @Override public void onInputDeviceAdded(int id){announceControllers();}
+    @Override public void onInputDeviceChanged(int id){announceControllers();}
+    @Override public void onInputDeviceRemoved(int id){announcedControllerKeys.remove(id);axes.remove(id);sentAxes.remove(id);triggers.remove(id);synchronized(rawAxes){rawAxes.remove(id);}Integer p=players.remove(id);if(p!=null&&p>0&&nativeNes!=null&&nativeNes.isRunning())nativeNes.pause();js("Arcade.nativeDisconnected("+id+")");}
     @Override protected void onActivityResult(int request,int result,Intent data){
-        super.onActivityResult(request,result,data);
+        super.onActivityResult(request,result,data);if(request==UsbPackageBrowser.TREE||request==UsbPackageBrowser.ALL_FILES)usbBrowser.result(request,result,data);
         if(request==43||request==44)HallUpdates.result(this,request,result);
         if(request==PICK_PACK&&!fallbackPackActive){if(result==RESULT_OK&&data!=null&&data.getData()!=null)resources.prepare(data.getData());else resources.cancel();}
         if(request==PICK_FILE&&!fallbackFileActive&&chooser!=null){Uri[] uris=null;if(result==RESULT_OK&&data!=null){if(data.getClipData()!=null){int n=data.getClipData().getItemCount();uris=new Uri[n];for(int i=0;i<n;i++)uris[i]=data.getClipData().getItemAt(i).getUri();}else if(data.getData()!=null)uris=new Uri[]{data.getData()};}chooser.onReceiveValue(uris);chooser=null;}
@@ -172,9 +192,15 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
     private void atomicWrite(File f,String value)throws IOException {AtomicFile a=new AtomicFile(f);FileOutputStream out=null;try{out=a.startWrite();out.write(value.getBytes("UTF-8"));a.finishWrite(out);}catch(IOException e){if(out!=null)a.failWrite(out);throw e;}}
     private void deleteTree(File file){if(file.isDirectory()){File[] children=file.listFiles();if(children!=null)for(File child:children)deleteTree(child);}file.delete();}
     public class Bridge {
-        @JavascriptInterface public String platformInfo(){String version="未知";try{version=getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception ignored){}return "{\"api\":"+android.os.Build.VERSION.SDK_INT+",\"version\":"+JSONObject.quote(version)+"}";}
-        @JavascriptInterface public void configureControllers(String json){try{controllerConfig=new JSONObject(json);runOnUiThread(new Runnable(){public void run(){axes.clear();sentAxes.clear();}});}catch(Exception ignored){}}
+        @JavascriptInterface public String platformInfo(){try{return new JSONObject().put("api",android.os.Build.VERSION.SDK_INT).put("version",getPackageManager().getPackageInfo(getPackageName(),0).versionName).put("model",android.os.Build.MANUFACTURER+" "+android.os.Build.MODEL).put("android",android.os.Build.VERSION.RELEASE).put("abi",android.os.Build.CPU_ABI).toString();}catch(Exception ignored){return "{}";}}
+        @JavascriptInterface public void configureControllers(String json){try{controllerConfig=new JSONObject(json);runOnUiThread(new Runnable(){public void run(){axes.clear();sentAxes.clear();announceControllers();}});}catch(Exception ignored){}}
         @JavascriptInterface public String controllerSnapshot(){JSONArray rows=new JSONArray();synchronized(rawAxes){for(Integer id:rawAxes.keySet())try{JSONArray a=new JSONArray();for(float v:rawAxes.get(id))a.put(v);rows.put(new JSONObject().put("id",id).put("key",controllerKey(id)).put("player",players.containsKey(id)?players.get(id):1).put("axes",a));}catch(Exception ignored){}}return rows.toString();}
+        @JavascriptInterface public String beginUsbScan(){return usbBrowser.scan();}
+        @JavascriptInterface public String usbScanStatus(){return usbBrowser.status();}
+        @JavascriptInterface public String browseUsbDirectory(String token){return usbBrowser.browse(token);}
+        @JavascriptInterface public String selectUsbPack(String token){return usbBrowser.select(token);}
+        @JavascriptInterface public void requestUsbAccess(String mode){usbBrowser.request(mode);}
+        @JavascriptInterface public String beginCommitPackImport(){return resources.beginCommit();}
         @JavascriptInterface public String resourceState(){try{return resources.state();}catch(Exception e){return "{}";}}
         @JavascriptInterface public String resourceVersion(){try{return resources.version();}catch(Exception e){return "";}}
         @JavascriptInterface public String resourcePresence(String json){try{return resources.presence(json);}catch(Exception e){return "{}";}}
@@ -195,6 +221,20 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         @JavascriptInterface public String checkGame(String json){try{JSONObject g=new JSONObject(json);File f=resources.resolve(g.getString("hash"));String hash;if(f!=null)hash=HallUpdates.fileDigest(f);else if(g.optString("system","nes").equals("nes"))hash=HallUpdates.streamDigest(getAssets().open(g.getString("path")));else {String path=g.getString("path");if(path.contains("..")||path.startsWith("/"))throw new IOException("路径无效");f=new File(getFilesDir(),path);hash=HallUpdates.fileDigest(f);}if(!hash.equals(g.getString("hash")))return JSONObject.quote(g.getString("title")+"：校验失败");String dependency=HallResources.dependencyError(g,f);return dependency==null?"null":JSONObject.quote(g.getString("title")+"："+dependency);}catch(Exception e){return JSONObject.quote("文件缺失或无法读取");}}
 
         @JavascriptInterface public boolean nativeNesAvailable(){return new File(getApplicationInfo().nativeLibraryDir,"libfceumm.so").isFile();}
+        @JavascriptInterface public String beginGameStart(final String json){
+            synchronized(startLock){if(startBusy)return "{\"error\":\"上一次启动仍在收尾，请稍后重试\"}";startBusy=true;startCancelled=false;startResult="{}";final int ticket=++startTicket;
+                new Thread(new Runnable(){public void run(){try{JSONObject request=new JSONObject(json),g=request.getJSONObject("game");String kind=request.getString("kind"),hash=g.getString("hash"),path=g.getString("path");nativeNes.startStage("检查资源");
+                    if(!kind.equals("nes")){File main=resources.resolve(hash);if(main==null){if(path.contains("..")||path.startsWith("/"))throw new IOException("资源路径无效");main=new File(getFilesDir(),path);}if(!main.isFile())throw new IOException("游戏资源尚未安装，请先导入标准资源包");String dependency=HallResources.dependencyError(g,main);if(dependency!=null)throw new IOException(dependency);}
+                    if(startCancelled)throw new IOException("已取消游戏启动");String name=path.substring(path.lastIndexOf('/')+1);
+                    String loaded=kind.equals("sfc")?nativeNes.loadSfc(name,hash):kind.equals("md")?nativeNes.loadMd(name,hash):kind.equals("gba")?nativeNes.loadGba(name,hash):kind.equals("arcade")?nativeNes.loadArcade(name,hash):nativeNes.load(request.getString("data"),hash);
+                    startResult=loaded;
+                }catch(Throwable e){try{startResult=new JSONObject().put("error",e.getMessage()==null?e.toString():e.getMessage()).toString();}catch(Exception ignored){startResult="{\"error\":\"游戏启动失败\"}";}}
+                finally{synchronized(startLock){if(startCancelled){nativeNes.close();startResult="{\"error\":\"已取消游戏启动\"}";}startBusy=false;}}}},"game-start-"+ticket).start();return "{\"ticket\":"+ticket+"}";
+            }
+        }
+        @JavascriptInterface public String pollGameStart(int ticket){synchronized(startLock){try{if(ticket!=startTicket)return "{\"error\":\"启动请求已失效\"}";return new JSONObject().put("pending",startBusy).put("stage",nativeNes.startStage()).put("result",new JSONObject(startResult)).toString();}catch(Exception e){return "{\"error\":\"无法读取启动状态\"}";}}}
+        @JavascriptInterface public void completeGameStart(){nativeNes.startStage("画面帧已输出");}
+        @JavascriptInterface public String lastGameStart(){return getSharedPreferences("game-start",0).getString("last","{}");}
         @JavascriptInterface public String nativeSfcStart(String name,String hash){return nativeNes.loadSfc(name,hash);}
         @JavascriptInterface public String nativeMdStart(String name,String hash){return nativeNes.loadMd(name,hash);}
         @JavascriptInterface public String nativeGbaStart(String name,String hash){return nativeNes.loadGba(name,hash);}
@@ -202,7 +242,7 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         @JavascriptInterface public String nativeNesStart(String data,String hash){return nativeNes.load(data,hash);}
         @JavascriptInterface public void nativeNesPause(){nativeNes.pause();}
         @JavascriptInterface public void nativeNesResume(){nativeNes.resume();}
-        @JavascriptInterface public void nativeNesClose(){nativeNes.close();}
+        @JavascriptInterface public void nativeNesClose(){synchronized(startLock){if(startBusy){startCancelled=true;return;}}nativeNes.close();}
         @JavascriptInterface public void nativeNesButton(int player,int button,boolean down){nativeNes.button(player,button,down);}
         @JavascriptInterface public void nativeNesRelease(){nativeNes.releaseAll();}
         @JavascriptInterface public void nativeNesVolume(float value){nativeNes.volume(value);}
