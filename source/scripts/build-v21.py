@@ -1,8 +1,9 @@
 """Build the split-resource Android release; provide explicit SDK/JDK and signing configuration."""
 import argparse,hashlib,json,os,shutil,subprocess,zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--abi',choices=['arm32','arm64'],required=True);p.add_argument('--jdk',required=True);p.add_argument('--tools',required=True);p.add_argument('--android-jar',required=True);p.add_argument('--signing-config',required=True);a=p.parse_args()
-root=Path(__file__).resolve().parents[1];out=root/('build-'+a.abi);out.mkdir(exist_ok=True);jdk=Path(a.jdk);tools=Path(a.tools);platform=Path(a.android_jar);sign=json.loads(Path(a.signing_config).read_text());env=dict(os.environ,JAVA_HOME=str(jdk),ARCADE_SIGNING_PASSWORD=sign['password'])
+root=Path(__file__).resolve().parents[1];version=ET.parse(root/'app/src/main/AndroidManifest.xml').getroot().attrib['{http://schemas.android.com/apk/res/android}versionName'];out=root/('build-'+a.abi);out.mkdir(exist_ok=True);jdk=Path(a.jdk);tools=Path(a.tools);platform=Path(a.android_jar);sign=json.loads(Path(a.signing_config).read_text());env=dict(os.environ,JAVA_HOME=str(jdk),ARCADE_SIGNING_PASSWORD=sign['password'])
 def run(args):subprocess.run([str(x) for x in args],check=True,env=env)
 run(['python3',root/'scripts/check-native-abis.py'])
 assets=out/'assets';shutil.rmtree(assets,ignore_errors=True);shutil.copytree(root/'app/src/main/assets',assets)
@@ -21,4 +22,4 @@ with zipfile.ZipFile(out/'unsigned.apk','a',zipfile.ZIP_DEFLATED) as z:
  z.write(out/'dex/classes.dex','classes.dex')
  for lib in (root/'app/src/main/jniLibs').rglob('*.so'):
   if lib.relative_to(root/'app/src/main/jniLibs').parts[0]==('armeabi-v7a' if a.abi=='arm32' else 'arm64-v8a'):z.write(lib,'lib/'+lib.relative_to(root/'app/src/main/jniLibs').as_posix())
-run([tools/'zipalign','-f','-p','4',out/'unsigned.apk',out/'aligned.apk']);apk=out/('childhood-arcade-2.1.0-'+a.abi+'.apk');run([jdk/'bin/java','-jar',tools/'lib/apksigner.jar','sign','--ks',sign['keystore'],'--ks-key-alias',sign['alias'],'--ks-pass','env:ARCADE_SIGNING_PASSWORD','--key-pass','env:ARCADE_SIGNING_PASSWORD','--out',apk,out/'aligned.apk']);run([jdk/'bin/java','-jar',tools/'lib/apksigner.jar','verify','--verbose',apk]);print(json.dumps({'apk':str(apk),'bytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest()}))
+run([tools/'zipalign','-f','-p','4',out/'unsigned.apk',out/'aligned.apk']);apk=out/('childhood-arcade-'+version+'-'+a.abi+'.apk');run([jdk/'bin/java','-jar',tools/'lib/apksigner.jar','sign','--ks',sign['keystore'],'--ks-key-alias',sign['alias'],'--ks-pass','env:ARCADE_SIGNING_PASSWORD','--key-pass','env:ARCADE_SIGNING_PASSWORD','--out',apk,out/'aligned.apk']);run([jdk/'bin/java','-jar',tools/'lib/apksigner.jar','verify','--verbose',apk]);print(json.dumps({'apk':str(apk),'bytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest()}))
