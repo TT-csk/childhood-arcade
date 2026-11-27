@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "version": "2.0.0",
-  "tag": "v2.0.0",
+  "version": "2.1.0",
+  "tag": "v2.1.0",
   "transport": "provider",
   "apk": {
-    "filename": "childhood-arcade-2.0.0-arm32.apk",
-    "sha256": "1ea524e56bb76c43066bba3da899305baecae1902e5f5b98432b62924c027d3e",
-    "bytes": 84477578
+    "filename": "childhood-arcade-2.1.0-arm32.apk",
+    "sha256": "f727dee23fa5eccfab653754c920c29973b1a45f6b7f2a90e15ea6ac59d027e0",
+    "bytes": 84518740
   },
   "game_pack": {
     "filename": "childhood-arcade-games-1.0.0.zip",
@@ -17,19 +17,35 @@
   "repository": "TT-csk/childhood-arcade",
   "minApi": 21,
   "apk32": {
-    "filename": "childhood-arcade-2.0.0-arm32.apk",
-    "sha256": "1ea524e56bb76c43066bba3da899305baecae1902e5f5b98432b62924c027d3e",
-    "bytes": 84477578
+    "filename": "childhood-arcade-2.1.0-arm32.apk",
+    "sha256": "f727dee23fa5eccfab653754c920c29973b1a45f6b7f2a90e15ea6ac59d027e0",
+    "bytes": 84518740
   },
   "apk64": {
-    "filename": "childhood-arcade-2.0.0-arm64.apk",
-    "sha256": "4684f49840841c474c06af2e5a10c7814adb19fe74fba4fd8d65557893dd92e7",
-    "bytes": 92255860
+    "filename": "childhood-arcade-2.1.0-arm64.apk",
+    "sha256": "320de4aeae5f83b9d9578d91a85238c583efc9a1614c944a5c7f4fda359659e6",
+    "bytes": 92297022
   },
   "game_pack_v2": {
     "filename": "childhood-arcade-games-2.0.0.zip",
     "sha256": "1ae23cc9304cb8659f4b591a3816013625f6902a062aeb4368af4c54d2faa750",
-    "bytes": 401816775
+    "bytes": 401816775,
+    "tag": "v2.0.0"
   },
-  "versionCode": 211
+  "versionCode": 220,
+  "channels": {
+    "resources": {
+      "schema": 1,
+      "kind": "resources",
+      "channel": "stable",
+      "version": "2.0.0",
+      "minApi": 21,
+      "url": "https://github.com/TT-csk/childhood-arcade/releases/download/v2.0.0/childhood-arcade-games-2.0.0.zip",
+      "sha256": "1ae23cc9304cb8659f4b591a3816013625f6902a062aeb4368af4c54d2faa750",
+      "bytes": 401816775,
+      "changes": [
+        "沿用 v2.0 游戏资源包，本轮更新大厅手柄和U盘导入功能"
+      ]
+    }
+  }
 }
